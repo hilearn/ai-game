@@ -168,12 +168,34 @@ class Game:
         for other in self.objects:
             if other is object_:
                 continue
-            if self.hit(other, object_):
-                pass
+            if (isinstance(object_, Weapon) and
+                    isinstance(other, Player) and
+                    object_.gameobject.player is not other and
+                    self.hit(object_, other)):
+                other.gameobject.damage(object_)
+                self.objects.remove(object_)
+                # TODO: remove player if he died
+            elif (isinstance(other, Weapon) and
+                  isinstance(object_, Player) and
+                  other.gameobject.player is not object_ and
+                  self.hit(object_, other)):
+                object_.gameobject.damage(other)
+                self.objects.remove(other)
+                # TODO: remove player if he died
 
     @staticmethod
-    def hit(first, second):
-        return False
+    def hit(first: ObjectInGame, second: ObjectInGame):
+        # If one rectangle is on left side of other
+        if (first.rect.left > second.rect.right) or (
+                second.rect.left > first.rect.right):
+            return False
+
+        # If one rectangle is above other
+        if (first.rect.bottom < second.rect.top) or (
+                second.rect.bottom < first.rect.top):
+            return False
+
+        return True
 
     def sight(self, object_in_game: ObjectInGame) -> Observation:
         return Observation(self.map_, self.objects)
