@@ -122,7 +122,7 @@ class Game:
             speed = min(speed, object_.x - self.borders.left)
         elif direction is Direction.RIGHT:
             speed = min(speed, self.borders.right - object_.x)
-        elif directoin is Direction.UP:
+        elif direction is Direction.UP:
             speed = min(speed, object_.y - self.borders.top)
         elif direction is Direction.DOWN:
             speed = min(speed, self.borders.bottom - object_.y)
@@ -133,7 +133,7 @@ class Game:
             yx = (0, speed)
         elif direction is Direction.UP:
             yx = (-speed, 0)
-        elif directoin is Direction.DOWN:
+        elif direction is Direction.DOWN:
             yx = (speed, 0)
 
         object_.x += yx[1]
@@ -141,13 +141,17 @@ class Game:
 
         self.triggers(object_)
 
-
     def triggers(self, object_: ObjectInGame):
         for other in self.objects:
             if other is object_:
                 continue
-            if self.hit(other, object_):
-                pass
+            if (isinstance(object_, Weapon) and
+                    isinstance(other, Player) and
+                    object_.gameobject.player is not other and
+                    self.hit(object_, other)):
+                other.gameobject.damage(object_)
+                self.objects.remove(object_)
+                # TODO: remove player if he died
 
     @staticmethod
     def hit(first: ObjectInGame, second: ObjectInGame):
