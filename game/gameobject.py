@@ -34,8 +34,22 @@ class GameObject:
 
 class Player(GameObject):
     """Bot or Person playing"""
+
     def damage(self, weapon):
+        self.reward = 1
         self.stats.health -= weapon.stats.health
+        if self.stats.health <= 0:
+            self.die()
+
+    def die(self):
+        self.reward = 1
+        self.stats.health = 0
+
+    def hit(self):
+        self.reward = 1
+
+    def kill(self):
+        self.reward = 1
 
 
 class Weapon(GameObject):

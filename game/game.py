@@ -101,6 +101,8 @@ class Game:
 
             for object_ in self.objects[:]:
                 self.act(object_, object_.gameobject.decide())
+            if self.ended:
+                break
 
     def act(self, object_: ObjectInGame, actions: list[Action]):
         if actions is None:
@@ -193,14 +195,22 @@ class Game:
                     self.hit(object_, other)):
                 other.gameobject.damage(object_.gameobject)
                 self.objects.remove(object_)
-                # TODO: remove player if he died
+                if other.gameobject.stats.health <= 0:
+                    self.objects.remove(other)
+                    object_.gameobject.player.kill()
+                else:
+                    object_.gameobject.player.hit()
             elif (isinstance(other.gameobject, Weapon) and
                   isinstance(object_.gameobject, Player) and
                   other.gameobject.player is not object_.gameobject and
                   self.hit(object_, other)):
                 object_.gameobject.damage(other.gameobject)
                 self.objects.remove(other)
-                # TODO: remove player if he died
+                if object_.gameobject.stats.health <= 0:
+                    self.objects.remove(object_)
+                    other.gameobject.player.kill()
+                else:
+                    other.gameobject.player.hit()
 
     @staticmethod
     def hit(first: ObjectInGame, second: ObjectInGame):
