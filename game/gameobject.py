@@ -29,7 +29,7 @@ class GameObject:
         pass
 
     def create_weapon(self, action):
-        return Weapon(self.weapon_stats, action)
+        return Weapon(self.weapon_stats, action, self)
 
 
 class Player(GameObject):
