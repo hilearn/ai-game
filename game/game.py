@@ -179,7 +179,7 @@ class Game:
                   isinstance(object_, Player) and
                   other.gameobject.player is not object_ and
                   self.hit(object_, other)):
-                object_.gameobject.damage(object_)
+                object_.gameobject.damage(other)
                 self.objects.remove(other)
                 # TODO: remove player if he died
 
