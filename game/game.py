@@ -189,28 +189,27 @@ class Game:
         for other in self.objects:
             if other is object_:
                 continue
-            if (isinstance(object_.gameobject, Weapon) and
-                    isinstance(other.gameobject, Player) and
-                    object_.gameobject.player is not other.gameobject and
-                    self.hit(object_, other)):
-                other.gameobject.damage(object_.gameobject)
-                self.objects.remove(object_)
-                if other.gameobject.stats.health <= 0:
-                    self.objects.remove(other)
-                    object_.gameobject.player.kill()
-                else:
-                    object_.gameobject.player.hit()
-            elif (isinstance(other.gameobject, Weapon) and
-                  isinstance(object_.gameobject, Player) and
-                  other.gameobject.player is not object_.gameobject and
-                  self.hit(object_, other)):
-                object_.gameobject.damage(other.gameobject)
-                self.objects.remove(other)
-                if object_.gameobject.stats.health <= 0:
-                    self.objects.remove(object_)
-                    other.gameobject.player.kill()
-                else:
-                    other.gameobject.player.hit()
+            self.collide(other, object_)
+
+    def collide(self, obj1: ObjectInGame, obj2: ObjectInGame):
+        if (isinstance(obj1.gameobject, Weapon) and
+                isinstance(obj2.gameobject, Player)):
+            player = obj2.gameobject
+            weapon = obj1.gameobject
+        elif (isinstance(obj2.gameobject, Weapon) and
+                isinstance(obj1.gameobject, Player)):
+            player = obj1.gameobject
+            weapon = obj2.gameobject
+        else:
+            return
+        if weapon.player is not player and self.hit(obj1, obj2):
+            player.damage(weapon)
+            self.objects.remove(weapon)
+            if player.health <= 0:
+                self.objects.remove(player)
+                weapon.player.kill()
+            else:
+                weapon.player.hit()
 
     @staticmethod
     def hit(first: ObjectInGame, second: ObjectInGame):
