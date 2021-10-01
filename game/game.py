@@ -88,8 +88,6 @@ class Game:
         else:
             self.tick_length = 1 / self.TICK_PER_SEC
 
-        self._ended = False
-
     def run(self):
         end = time.time()
         for self.tick in range(self.MAX_NUM_TICKS):
@@ -222,10 +220,8 @@ class Game:
 
     @property
     def ended(self):
-        # FIXME:
-        return (self._ended
-                or (self.tick >= self.MAX_NUM_TICKS)
-                or len(self.players) == 1)
+        return ((self.tick >= self.MAX_NUM_TICKS)
+                or len(self.objects) == 1)
 
 
 class RemoteGame(Game):
