@@ -43,7 +43,7 @@ class Observation:
 
 class Game:
     CELL_SIZE = 10  # pixels
-    TICK_PER_SEC = 24  # number of ticks per second
+    TICK_PER_SEC = 1  # number of ticks per second
     MAX_NUM_TICKS = 2880  # number of ticks till the end of the game
 
     def __init__(self, map_: Map, players: list[GameObject]):
@@ -81,14 +81,14 @@ class Game:
     def run(self):
         end = time.time()
         for self.tick in range(self.MAX_NUM_TICKS):
-            time.sleep(max(time.time() - end, 0))
+            time.sleep(max(end - time.time(), 0))
             start = end
             end = start + self.tick_length
 
             for object_ in self.objects:
                 object_.gameobject.observe(self.sight(object_))
 
-            for gameobject in self.objects[:]:
+            for object_ in self.objects[:]:
                 self.act(object_, object_.gameobject.decide())
 
     def act(self, object_: ObjectInGame, actions: list[Action]):
@@ -127,7 +127,7 @@ class Game:
                              self.get_cell(object_.rect.right + speed,
                                            object_.rect.bottom)}:
                 speed = self.CELL_SIZE - object_.rect.right % self.CELL_SIZE
-        elif directoin is Direction.UP:
+        elif direction is Direction.UP:
             speed = min(speed, object_.rect.top - self.borders.top)
             if Cell.WALL in {self.get_cell(object_.rect.right,
                                            object_.rect.top - speed),
@@ -153,7 +153,7 @@ class Game:
             yx = (0, speed)
         elif direction is Direction.UP:
             yx = (-speed, 0)
-        elif directoin is Direction.DOWN:
+        elif direction is Direction.DOWN:
             yx = (speed, 0)
 
         object_.x += yx[1]
