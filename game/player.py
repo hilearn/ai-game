@@ -12,8 +12,8 @@ class RemotePlayer(Player):
 
 
 class KeyboardPlayer(Player):
-    def __init__(self, stats: Stats):
-        super().__init__(stats)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.key_pressed = [Action.NOTHING, Action.NOTHING]
         pygame.init()
         listener = threading.Thread(target=self.listener, daemon=True)
@@ -41,8 +41,8 @@ class KeyboardPlayer(Player):
 
 
 class Bot(Player):
-    def __init__(self, stats: Stats, strategy):
-        super().__init__(stats)
+    def __init__(self, strategy, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.strategy = strategy
 
     def decide(self):

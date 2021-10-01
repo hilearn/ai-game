@@ -12,6 +12,18 @@ class Direction(Enum):
     UP = 3
     DOWN = 4
 
+    def to_action(self):
+        if self is self.UP:
+            return Action.MOVE_UP
+        elif self is self.LEFT:
+            return Action.MOVE_LEFT
+        elif self is self.RIGHT:
+            return Action.MOVE_RIGHT
+        elif slef is self.DOWN:
+            return Action.MOVE_DOWN
+        else:
+            assert False
+
 
 @dataclass
 class Rect:
@@ -94,6 +106,7 @@ class Game:
     def act(self, object_: ObjectInGame, actions: list[Action]):
         if actions is None:
             return
+        eighth_cell = self.CELL_SIZE // 8
         for action in actions:
             speed = object_.gameobject.stats.speed
             if action == Action.NOTHING:
@@ -107,8 +120,15 @@ class Game:
             elif action == Action.MOVE_DOWN:
                 self.move(object_, Direction.DOWN, speed)
             elif action == Action.SHOOT:
-                # TODO:
-                pass
+                self.objects.append(
+                    ObjectInGame(
+                        object_.gameobject.create_weapon(object_.direction),
+                        object_.y,
+                        object_.x,
+                        object_.direction,
+                        (eighth_cell, eighth_cell)
+                    )
+                )
 
     def move(self, object_: ObjectInGame, direction: Direction, speed: int):
         object_.direction = direction
