@@ -34,12 +34,15 @@ class GameObject:
 
 class Player(GameObject):
     """Bot or Person playing"""
+    def damage(self, weapon):
+        self.stats.health -= weapon.stats.health
 
 
 class Weapon(GameObject):
-    def __init__(self, stats: Stats, action):
+    def __init__(self, stats: Stats, action: Action, player: Player):
         super().__init__(stats)
         self.action = action
+        self.player = player
 
     def decide(self):
         return self.action
