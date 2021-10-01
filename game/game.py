@@ -17,6 +17,7 @@ class ObjectInGame:
 class Observation:
     map_: Map
     objects: list[ObjectInGame]
+    cell_size: int
 
 
 class Game:
@@ -94,7 +95,7 @@ class Game:
         return False
 
     def sight(self, object_in_game: ObjectInGame) -> Observation:
-        return Observation(self.map_, self.objects)
+        return Observation(self.map_, self.objects, self.CELL_SIZE)
 
     def update(self):
         """Updates on game independent of specific objects"""
