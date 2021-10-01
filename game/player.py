@@ -37,7 +37,7 @@ class KeyboardPlayer(Player):
                 self.key_pressed[0] = Action.MOVE_UP
             elif keys[pygame.K_SPACE]:
                 self.key_pressed[1] = Action.SHOOT
-            # pygame.event.pump()
+            pygame.event.pump()
 
 
 class Bot(Player):

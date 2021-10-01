@@ -20,9 +20,6 @@ class Rect:
     left: int
     right: int
 
-    def distance(self, other, direction):
-        pass
-
 
 @dataclass
 class ObjectInGame:
@@ -46,7 +43,7 @@ class Observation:
 
 class Game:
     CELL_SIZE = 10  # pixels
-    TICK_PER_SEC = 24  # number of ticks per second
+    TICK_PER_SEC = 1  # number of ticks per second
     MAX_NUM_TICKS = 2880  # number of ticks till the end of the game
 
     def __init__(self, map_: Map, players: list[GameObject]):
@@ -84,23 +81,21 @@ class Game:
     def run(self):
         end = time.time()
         for self.tick in range(self.MAX_NUM_TICKS):
-            time.sleep(max(time.time() - end, 0))
+            time.sleep(max(end - time.time(), 0))
             start = end
             end = start + self.tick_length
 
             for object_ in self.objects:
                 object_.gameobject.observe(self.sight(object_))
 
-            for gameobject in self.objects:
+            for object_ in self.objects[:]:
                 self.act(object_, object_.gameobject.decide())
-
-            self.update()
 
     def act(self, object_: ObjectInGame, actions: list[Action]):
         if actions is None:
             return
         for action in actions:
-            speed = 1
+            speed = object_.gameobject.stats.speed
             if action == Action.NOTHING:
                 continue
             elif action == Action.MOVE_LEFT:
@@ -119,13 +114,38 @@ class Game:
         object_.direction = direction
 
         if direction is Direction.LEFT:
-            speed = min(speed, object_.x - self.borders.left)
+            speed = min(speed, object_.rect.left - self.borders.left)
+            if Cell.WALL in {self.get_cell(object_.rect.left - speed,
+                                           object_.rect.top),
+                             self.get_cell(object_.rect.left - speed,
+                                           object_.rect.bottom)}:
+                speed = object_.rect.left % self.CELL_SIZE
         elif direction is Direction.RIGHT:
-            speed = min(speed, self.borders.right - object_.x)
+            speed = min(speed, self.borders.right - object_.rect.right)
+            if Cell.WALL in {self.get_cell(object_.rect.right + speed,
+                                           object_.rect.top),
+                             self.get_cell(object_.rect.right + speed,
+                                           object_.rect.bottom)}:
+                speed = self.CELL_SIZE - object_.rect.right % self.CELL_SIZE
         elif direction is Direction.UP:
-            speed = min(speed, object_.y - self.borders.top)
+            speed = min(speed, object_.rect.top - self.borders.top)
+            if Cell.WALL in {self.get_cell(object_.rect.right,
+                                           object_.rect.top - speed),
+                             self.get_cell(object_.rect.left,
+                                           object_.rect.top - speed)}:
+                speed = object_.rect.top % self.CELL_SIZE
         elif direction is Direction.DOWN:
-            speed = min(speed, self.borders.bottom - object_.y)
+            speed = min(speed, self.borders.bottom - object_.rect.bottom)
+            if Cell.WALL in {self.get_cell(object_.rect.right,
+                                           object_.rect.bottom + speed),
+                             self.get_cell(object_.rect.left,
+                                           object_.rect.bottom + speed)}:
+                speed = self.CELL_SIZE - object_.rect.bottom % self.CELL_SIZE
+
+        if speed == 0:
+            if isinstance(object_, Weapon):
+                self.objects.remove(object_)
+            return
 
         if direction is Direction.LEFT:
             yx = (0, -speed)
@@ -140,6 +160,9 @@ class Game:
         object_.y += yx[0]
 
         self.triggers(object_)
+
+    def get_cell(self, y, x):
+        return self.map_[y // self.CELL_SIZE][x // self.CELL_SIZE]
 
     def triggers(self, object_: ObjectInGame):
         for other in self.objects:
@@ -169,9 +192,6 @@ class Game:
 
     def sight(self, object_in_game: ObjectInGame) -> Observation:
         return Observation(self.map_, self.objects)
-
-    def update(self):
-        """Updates on game independent of specific objects"""
 
     @property
     def ended(self):
