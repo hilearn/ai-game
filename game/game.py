@@ -150,8 +150,18 @@ class Game:
                 pass
 
     @staticmethod
-    def hit(first, second):
-        return False
+    def hit(first: ObjectInGame, second: ObjectInGame):
+        # If one rectangle is on left side of other
+        if (first.rect.left > second.rect.right) or (
+                second.rect.left > first.rect.right):
+            return False
+
+        # If one rectangle is above other
+        if (first.rect.bottom < second.rect.top) or (
+                second.rect.bottom < first.rect.top):
+            return False
+
+        return True
 
     def sight(self, object_in_game: ObjectInGame) -> Observation:
         return Observation(self.map_, self.objects)
