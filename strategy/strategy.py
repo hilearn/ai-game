@@ -1,6 +1,5 @@
 import numpy as np
-from game import Cell, Bot
-from game.game import Observation
+from game import Cell, Bot, Observation
 
 
 class Strategy:
@@ -36,5 +35,5 @@ class NNStrategy(Strategy):
             else:
                 layer = 1
             size_y, size_x = obj.size
-            input_matrix[layer, obj.y:obj.y - size_y, obj.x:obj.x - size_x] = 1
+            input_matrix[layer, obj.y:obj.y + size_y, obj.x:obj.x + size_x] = 1
         return input_matrix
