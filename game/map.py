@@ -18,6 +18,12 @@ class Map:
             assert (self._map[y][x] is Cell.EMPTY
                     ), "player can only spawn on an empty cell"
 
+    def size(self):
+        return (len(self._map), len(self._map[0]))
+
+    def __getitem__(self, ind):
+        return self._map[ind]
+
 
 _3X5Map = Map([[Cell.EMPTY] * 5,
                [Cell.EMPTY, Cell.WALL, Cell.EMPTY, Cell.WALL, Cell.EMPTY],
