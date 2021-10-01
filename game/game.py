@@ -19,7 +19,7 @@ class Direction(Enum):
             return Action.MOVE_LEFT
         elif self is self.RIGHT:
             return Action.MOVE_RIGHT
-        elif slef is self.DOWN:
+        elif self is self.DOWN:
             return Action.MOVE_DOWN
         else:
             assert False
@@ -55,14 +55,15 @@ class Observation:
 
 
 class Game:
-    CELL_SIZE = 10  # pixels
-    TICK_PER_SEC = 1  # number of ticks per second
+    CELL_SIZE = 200  # pixels
+    FENCE_SIZE = 50
+    TICK_PER_SEC = 24  # number of ticks per second
     MAX_NUM_TICKS = 2880  # number of ticks till the end of the game
 
     def __init__(self, map_: Map, players: list[GameObject]):
         self.map_ = map_
-        self.borders = Rect(0, self.map_.size()[0] * self.CELL_SIZE,
-                            0, self.map_.size()[1] * self.CELL_SIZE)
+        self.borders = Rect(0, self.map_.size()[0] * self.CELL_SIZE - 1,
+                            0, self.map_.size()[1] * self.CELL_SIZE - 1)
         assert (len(self.map_.spawn_points) >= len(players)
                 ), "Can't have more players than spawn points"
         self.clear(players)
@@ -92,8 +93,12 @@ class Game:
     def run(self):
         end = time.time()
         for self.tick in range(self.MAX_NUM_TICKS):
-            time.sleep(max(end - time.time(), 0))
-            start = end
+            delta = end - time.time()
+            time.sleep(max(delta, 0))
+            if delta < -2:
+                start = time.time()
+            else:
+                start =end
             end = start + self.tick_length
 
             for object_ in self.objects:
@@ -123,7 +128,7 @@ class Game:
             elif action == Action.SHOOT:
                 self.objects.append(
                     ObjectInGame(
-                        object_.gameobject.create_weapon(object_.direction),
+                        object_.gameobject.create_weapon(object_.direction.to_action()),
                         object_.y,
                         object_.x,
                         object_.direction,
@@ -140,31 +145,39 @@ class Game:
                                            object_.rect.top),
                              self.get_cell(object_.rect.left - speed,
                                            object_.rect.bottom)}:
-                speed = object_.rect.left % self.CELL_SIZE
+                speed2 = object_.rect.left % self.CELL_SIZE
+                speed = min(speed, speed2)
         elif direction is Direction.RIGHT:
             speed = min(speed, self.borders.right - object_.rect.right)
             if Cell.WALL in {self.get_cell(object_.rect.right + speed,
                                            object_.rect.top),
                              self.get_cell(object_.rect.right + speed,
                                            object_.rect.bottom)}:
-                speed = self.CELL_SIZE - object_.rect.right % self.CELL_SIZE
+                speed2 = self.CELL_SIZE - object_.rect.right % self.CELL_SIZE
+                if speed2 == self.CELL_SIZE:
+                    speed2 = 0
+                speed = min(speed, speed2)
         elif direction is Direction.UP:
             speed = min(speed, object_.rect.top - self.borders.top)
             if Cell.WALL in {self.get_cell(object_.rect.right,
                                            object_.rect.top - speed),
                              self.get_cell(object_.rect.left,
                                            object_.rect.top - speed)}:
-                speed = object_.rect.top % self.CELL_SIZE
+                speed2 = object_.rect.top % self.CELL_SIZE
+                speed = min(speed, speed2)
         elif direction is Direction.DOWN:
             speed = min(speed, self.borders.bottom - object_.rect.bottom)
             if Cell.WALL in {self.get_cell(object_.rect.right,
                                            object_.rect.bottom + speed),
                              self.get_cell(object_.rect.left,
                                            object_.rect.bottom + speed)}:
-                speed = self.CELL_SIZE - object_.rect.bottom % self.CELL_SIZE
+                speed2 = self.CELL_SIZE - object_.rect.bottom % self.CELL_SIZE
+                if speed2 == self.CELL_SIZE:
+                    speed2 = 0
+                speed = min(speed, speed2)
 
         if speed == 0:
-            if isinstance(object_, Weapon):
+            if isinstance(object_.gameobject, Weapon):
                 self.objects.remove(object_)
             return
 
@@ -182,7 +195,7 @@ class Game:
 
         self.triggers(object_)
 
-    def get_cell(self, y, x):
+    def get_cell(self, x, y):
         return self.map_[y // self.CELL_SIZE][x // self.CELL_SIZE]
 
     def triggers(self, object_: ObjectInGame):
@@ -196,17 +209,21 @@ class Game:
                 isinstance(obj2.gameobject, Player)):
             player = obj2.gameobject
             weapon = obj1.gameobject
+            weapon_obj = obj1
+            player_obj = obj2
         elif (isinstance(obj2.gameobject, Weapon) and
                 isinstance(obj1.gameobject, Player)):
             player = obj1.gameobject
             weapon = obj2.gameobject
+            weapon_obj = obj2
+            player_obj = obj1
         else:
             return
         if weapon.player is not player and self.hit(obj1, obj2):
             player.damage(weapon)
-            self.objects.remove(weapon)
+            self.objects.remove(weapon_obj)
             if player.health <= 0:
-                self.objects.remove(player)
+                self.objects.remove(player_obj)
                 weapon.player.kill()
             else:
                 weapon.player.hit()
@@ -217,6 +234,7 @@ class Game:
         if (first.rect.left > second.rect.right) or (
                 second.rect.left > first.rect.right):
             return False
+
 
         # If one rectangle is above other
         if (first.rect.bottom < second.rect.top) or (
