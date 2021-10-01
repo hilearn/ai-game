@@ -175,6 +175,13 @@ class Game:
                 other.gameobject.damage(object_)
                 self.objects.remove(object_)
                 # TODO: remove player if he died
+            elif (isinstance(other, Weapon) and
+                  isinstance(object_, Player) and
+                  other.gameobject.player is not object_ and
+                  self.hit(object_, other)):
+                object_.gameobject.damage(object_)
+                self.objects.remove(other)
+                # TODO: remove player if he died
 
     @staticmethod
     def hit(first: ObjectInGame, second: ObjectInGame):
