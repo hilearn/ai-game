@@ -168,18 +168,18 @@ class Game:
         for other in self.objects:
             if other is object_:
                 continue
-            if (isinstance(object_, Weapon) and
-                    isinstance(other, Player) and
-                    object_.gameobject.player is not other and
+            if (isinstance(object_.gameobject, Weapon) and
+                    isinstance(other.gameobject, Player) and
+                    object_.gameobject.player is not other.gameobject and
                     self.hit(object_, other)):
-                other.gameobject.damage(object_)
+                other.gameobject.damage(object_.gameobject)
                 self.objects.remove(object_)
                 # TODO: remove player if he died
-            elif (isinstance(other, Weapon) and
-                  isinstance(object_, Player) and
-                  other.gameobject.player is not object_ and
+            elif (isinstance(other.gameobject, Weapon) and
+                  isinstance(object_.gameobject, Player) and
+                  other.gameobject.player is not object_.gameobject and
                   self.hit(object_, other)):
-                object_.gameobject.damage(other)
+                object_.gameobject.damage(other.gameobject)
                 self.objects.remove(other)
                 # TODO: remove player if he died
 
