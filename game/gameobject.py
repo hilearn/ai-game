@@ -16,3 +16,15 @@ class GameObject:
 
     def observe(self, sight):
         pass
+
+
+class Player(GameObject):
+    """Bot or Person playing"""
+
+
+class Weapon(GameObject):
+    def __init__(self, action):
+        self.action = action
+
+    def decide(self):
+        return self.action

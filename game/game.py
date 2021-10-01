@@ -8,9 +8,15 @@ from .map import Cell, Map
 @dataclass
 class ObjectInGame:
     gameobject: GameObject
-    y: int
-    x: int
+    y: int  # top
+    x: int  # left
     size: tuple[int, int]
+
+
+@dataclass
+class Observation:
+    map_: Map
+    objects: list[ObjectInGame]
 
 
 class Game:
@@ -60,13 +66,38 @@ class Game:
             self.update()
 
     def act(self, object_: ObjectInGame, actions: list[Action]):
-        pass
+        for action in actions:
+            speed = 1
+            if action == Action.NOTHING:
+                continue
+            elif action == Action.MOVE_LEFT:
+                object_.x -= speed
+            elif action == Action.MOVE_RIGHT:
+                object_.x += speed
+            elif action == Action.MOVE_UP:
+                object_.y -= speed
+            elif action == Action.MOVE_DOWN:
+                object_.y += speed
+            elif action == Action.SHOOT:
+                # TODO:
+                pass
 
-    def sight(self, object_in_game: ObjectInGame):
-        pass
+    def triggers(self, object_):
+        for other in self.objects:
+            if other is object_:
+                continue
+            if self.hit(other, object_):
+                pass
+
+    @staticmethod
+    def hit(first, second):
+        return False
+
+    def sight(self, object_in_game: ObjectInGame) -> Observation:
+        return Observation(self.map_, self.objects)
 
     def update(self):
-        pass
+        """Updates on game independent of specific objects"""
 
     @property
     def ended(self):
@@ -74,10 +105,6 @@ class Game:
         return (self._ended
                 or (self.tick >= self.MAX_NUM_TICKS)
                 or len(self.players) == 1)
-
-
-class VideoGame(Game):
-    pass
 
 
 class RemoteGame(VideoGame):
