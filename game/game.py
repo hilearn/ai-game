@@ -142,8 +142,9 @@ class Game:
                                            object_.rect.bottom + speed)}:
                 speed = self.CELL_SIZE - object_.rect.bottom % self.CELL_SIZE
 
-        if speed == 0 and isinstance(object_, Weapon):
-            self.objects.remove(object_)
+        if speed == 0:
+            if isinstance(object_, Weapon):
+                self.objects.remove(object_)
             return
 
         if direction is Direction.LEFT:
