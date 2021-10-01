@@ -14,7 +14,7 @@ class RemotePlayer(Player):
 class KeyboardPlayer(Player):
     def __init__(self, stats: Stats):
         super().__init__(stats)
-        self.key_pressed = None
+        self.key_pressed = [Action.NOTHING, Action.NOTHING]
         pygame.init()
         listener = threading.Thread(target=self.listener, daemon=True)
         listener.start()
