@@ -1,5 +1,4 @@
-from game import Game, Player, _3X5Map
-from game.gameobject import Stats
+from game import Game, Player, _3X5Map, Stats
 
 
 def main():
