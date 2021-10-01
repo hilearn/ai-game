@@ -1,7 +1,7 @@
 import pygame
 import threading
 from pathlib import Path
-from .gameobject import Player, Action, Stats
+from .gameobject import Player, Action
 from .game import Observation, Cell
 
 
@@ -43,7 +43,7 @@ class KeyboardPlayer(Player):
                 self.key_pressed[0] = Action.MOVE_UP
             elif keys[pygame.K_SPACE]:
                 self.key_pressed[1] = Action.SHOOT
-            pygame.event.pump()
+            # pygame.event.pump()
 
     def load(self, sight):
         if self.loaded:
@@ -54,46 +54,53 @@ class KeyboardPlayer(Player):
             len(input_map) * sight.cell_size + 2 * self.BORDER_SIZE
         )
 
-        self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Brutal story of little Ninja")
-        FPS = 24
 
-        self.fence_image_width = pygame.image.load(self.photos_path / 'wooden-fence-transparent-background-isolated-garden-barrier-black-color-simple-illustration-farm-fence-banner-rustic-wall-200961194-removebg-preview.png')
+        self.fence_image_width = pygame.image.load(
+            self.photos_path / 'wooden-fence.png')
         self.fence_w = pygame.transform.scale(
             self.fence_image_width,
             (self.WIDTH, self.BORDER_SIZE))
-        self.fence_image_height_l = pygame.image.load(self.photos_path / 'left_border.png')
+        self.fence_image_height_l = pygame.image.load(
+            self.photos_path / 'left_border.png')
         self.fence_h_l = pygame.transform.scale(
             self.fence_image_height_l,
             (self.BORDER_SIZE, self.HEIGHT - 2 * self.BORDER_SIZE))
-        self.fence_image_height_h = pygame.image.load(self.photos_path / 'right_border.png')
+        self.fence_image_height_h = pygame.image.load(
+            self.photos_path / 'right_border.png')
         self.fence_h_r = pygame.transform.scale(
             self.fence_image_height_h,
             (self.BORDER_SIZE, self.HEIGHT - 2 * self.BORDER_SIZE))
 
         self.barier_image = pygame.image.load(self.photos_path / 'Box.png')
         self.barier_size = (sight.cell_size, sight.cell_size)
-        self.barier = pygame.transform.scale(self.barier_image, self.barier_size)
+        self.barier = pygame.transform.scale(self.barier_image,
+                                             self.barier_size)
 
         self.images = {}
         self.loaded = True
-    
+
     def get_image(self, object_):
         if object_.gameobject.image not in self.images:
-            image = pygame.image.load(self.photos_path / object_.gameobject.image)
-            self.images[object_.gameobject.image] = pygame.transform.scale(image, object_.size[::-1])
+            image = pygame.image.load(
+                self.photos_path / object_.gameobject.image)
+            self.images[object_.gameobject.image] = pygame.transform.scale(
+                image, object_.size[::-1])
         return self.images[object_.gameobject.image]
 
     def observe(self, sight):
         self.load(sight)
 
+        self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+
         background_color = (255, 255, 255)
-        self.WIN.fill(background_color) 
+        self.WIN.fill(background_color)
 
         self.WIN.blit(self.fence_w, (0, 0))
         self.WIN.blit(self.fence_w, (0, self.HEIGHT - self.BORDER_SIZE))
         self.WIN.blit(self.fence_h_l, (0, self.BORDER_SIZE))
-        self.WIN.blit(self.fence_h_r, (self.WIDTH - self.BORDER_SIZE, self.BORDER_SIZE))
+        self.WIN.blit(self.fence_h_r, (self.WIDTH - self.BORDER_SIZE,
+                                       self.BORDER_SIZE))
         for i, row in enumerate(sight.map_._map):
             for j, cell in enumerate(row):
                 if cell == Cell.WALL:
