@@ -23,7 +23,7 @@ update_venv: requirements.txt ${venv}/bin/pip
 	@ln -s ${venv_name} .venv/current
 	@echo Success, to activate the development environment, run:
 	@echo "\tsource .venv/current/bin/activate"
-.PHONY: update_venvi
+.PHONY: update_venv
 
 
 lint:
