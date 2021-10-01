@@ -46,7 +46,7 @@ class Player(GameObject):
 
     def damage(self, weapon):
         self.reward = 1
-        self.stats.health -= weapon.stats.health
+        self.health -= weapon.stats.health
         if self.stats.health <= 0:
             self.die()
 

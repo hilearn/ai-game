@@ -14,11 +14,13 @@ class RemotePlayer(Player):
 
 
 class KeyboardPlayer(Player):
+    BORDER_SIZE = 25
     photos_path = Path(__file__).parent / 'photos'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.key_pressed = [Action.NOTHING, Action.NOTHING]
+        self.loaded = False
         pygame.init()
         listener = threading.Thread(target=self.listener, daemon=True)
         listener.start()
@@ -43,45 +45,66 @@ class KeyboardPlayer(Player):
                 self.key_pressed[1] = Action.SHOOT
             pygame.event.pump()
 
-    def observe(self, sight):
+    def load(self, sight):
+        if self.loaded:
+            return
         input_map = sight.map_._map
-        BORDER_SIZE = 25
-        WIDTH, HEIGHT = (len(input_map[0]) * sight.cell_size+ 2 * BORDER_SIZE,
-                         len(input_map) * sight.cell_size + 2 * BORDER_SIZE)
+        self.WIDTH, self.HEIGHT = (
+            len(input_map[0]) * sight.cell_size + 2 * self.BORDER_SIZE,
+            len(input_map) * sight.cell_size + 2 * self.BORDER_SIZE
+        )
 
-        WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Brutal story of little Ninja")
-        background_color = (255, 255, 255)
         FPS = 24
 
-        fence_image_width = pygame.image.load(self.photos_path / 'wooden-fence-transparent-background-isolated-garden-barrier-black-color-simple-illustration-farm-fence-banner-rustic-wall-200961194-removebg-preview.png')
-        fence_w = pygame.transform.scale(fence_image_width, (WIDTH, BORDER_SIZE))
-        fence_image_height_l = pygame.image.load(self.photos_path / 'left_border.png')
-        fence_h_l = pygame.transform.scale(fence_image_height_l, (BORDER_SIZE, HEIGHT - 2 * BORDER_SIZE))
-        fence_image_height_h = pygame.image.load(self.photos_path / 'right_border.png')
-        fence_h_r = pygame.transform.scale(fence_image_height_h, (BORDER_SIZE, HEIGHT - 2 * BORDER_SIZE))
+        self.fence_image_width = pygame.image.load(self.photos_path / 'wooden-fence-transparent-background-isolated-garden-barrier-black-color-simple-illustration-farm-fence-banner-rustic-wall-200961194-removebg-preview.png')
+        self.fence_w = pygame.transform.scale(
+            self.fence_image_width,
+            (self.WIDTH, self.BORDER_SIZE))
+        self.fence_image_height_l = pygame.image.load(self.photos_path / 'left_border.png')
+        self.fence_h_l = pygame.transform.scale(
+            self.fence_image_height_l,
+            (self.BORDER_SIZE, self.HEIGHT - 2 * self.BORDER_SIZE))
+        self.fence_image_height_h = pygame.image.load(self.photos_path / 'right_border.png')
+        self.fence_h_r = pygame.transform.scale(
+            self.fence_image_height_h,
+            (self.BORDER_SIZE, self.HEIGHT - 2 * self.BORDER_SIZE))
 
-        barier_image = pygame.image.load(self.photos_path / 'Box.png')
-        barier_size = (sight.cell_size, sight.cell_size)
-        barier = pygame.transform.scale(barier_image, barier_size)
+        self.barier_image = pygame.image.load(self.photos_path / 'Box.png')
+        self.barier_size = (sight.cell_size, sight.cell_size)
+        self.barier = pygame.transform.scale(self.barier_image, self.barier_size)
 
-        WIN.fill(background_color) 
+        self.images = {}
+        self.loaded = True
+    
+    def get_image(self, object_):
+        if object_.gameobject.image not in self.images:
+            image = pygame.image.load(self.photos_path / object_.gameobject.image)
+            self.images[object_.gameobject.image] = pygame.transform.scale(image, object_.size[::-1])
+        return self.images[object_.gameobject.image]
 
-        WIN.blit(fence_w, (0,0))
-        WIN.blit(fence_w, (0,HEIGHT - BORDER_SIZE))
-        WIN.blit(fence_h_l, (0, BORDER_SIZE))
-        WIN.blit(fence_h_r, (WIDTH - BORDER_SIZE, BORDER_SIZE))
+    def observe(self, sight):
+        self.load(sight)
 
-        for i, row in enumerate(input_map):
+        background_color = (255, 255, 255)
+        self.WIN.fill(background_color) 
+
+        self.WIN.blit(self.fence_w, (0, 0))
+        self.WIN.blit(self.fence_w, (0, self.HEIGHT - self.BORDER_SIZE))
+        self.WIN.blit(self.fence_h_l, (0, self.BORDER_SIZE))
+        self.WIN.blit(self.fence_h_r, (self.WIDTH - self.BORDER_SIZE, self.BORDER_SIZE))
+        for i, row in enumerate(sight.map_._map):
             for j, cell in enumerate(row):
                 if cell == Cell.WALL:
-                    top_left_coord = (j * sight.cell_size + BORDER_SIZE, i * sight.cell_size + BORDER_SIZE)
-                    WIN.blit(barier, top_left_coord)
+                    top_left_coord = (j * sight.cell_size + self.BORDER_SIZE,
+                                      i * sight.cell_size + self.BORDER_SIZE)
+                    self.WIN.blit(self.barier, top_left_coord)
 
         for object_ in sight.objects:
-            ninja_image = pygame.image.load(self.photos_path / object_.gameobject.image)
-            ninja = pygame.transform.scale(ninja_image, object_.size[::-1])
-            WIN.blit(ninja, (object_.x + BORDER_SIZE, object_.y + BORDER_SIZE))
+            self.WIN.blit(self.get_image(object_),
+                          (object_.x + self.BORDER_SIZE,
+                           object_.y + self.BORDER_SIZE))
 
         pygame.display.update()
 
