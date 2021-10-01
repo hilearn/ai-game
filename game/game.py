@@ -12,6 +12,18 @@ class Direction(Enum):
     UP = 3
     DOWN = 4
 
+    def to_action(self):
+        if self is self.UP:
+            return Action.MOVE_UP
+        elif self is self.LEFT:
+            return Action.MOVE_LEFT
+        elif self is self.RIGHT:
+            return Action.MOVE_RIGHT
+        elif self is self.DOWN:
+            return Action.MOVE_DOWN
+        else:
+            assert False
+
 
 @dataclass
 class Rect:
@@ -19,9 +31,6 @@ class Rect:
     bottom: int
     left: int
     right: int
-
-    def distance(self, other, direction):
-        pass
 
 
 @dataclass
@@ -81,28 +90,25 @@ class Game:
         else:
             self.tick_length = 1 / self.TICK_PER_SEC
 
-        self._ended = False
-
     def run(self):
         end = time.time()
         for self.tick in range(self.MAX_NUM_TICKS):
-            time.sleep(max(time.time() - end, 0))
+            time.sleep(max(end - time.time(), 0))
             start = end
             end = start + self.tick_length
 
             for object_ in self.objects:
                 object_.gameobject.observe(self.sight(object_))
 
-            for gameobject in self.objects:
+            for object_ in self.objects[:]:
                 self.act(object_, object_.gameobject.decide())
-
-            self.update()
 
     def act(self, object_: ObjectInGame, actions: list[Action]):
         if actions is None:
             return
+        eighth_cell = self.CELL_SIZE // 8
         for action in actions:
-            speed = 1
+            speed = object_.gameobject.stats.speed
             if action == Action.NOTHING:
                 continue
             elif action == Action.MOVE_LEFT:
@@ -114,20 +120,52 @@ class Game:
             elif action == Action.MOVE_DOWN:
                 self.move(object_, Direction.DOWN, speed)
             elif action == Action.SHOOT:
-                # TODO:
-                pass
+                self.objects.append(
+                    ObjectInGame(
+                        object_.gameobject.create_weapon(object_.direction.to_action()),
+                        object_.y,
+                        object_.x,
+                        object_.direction,
+                        (eighth_cell, eighth_cell)
+                    )
+                )
 
     def move(self, object_: ObjectInGame, direction: Direction, speed: int):
         object_.direction = direction
 
         if direction is Direction.LEFT:
-            speed = min(speed, object_.x - self.borders.left)
+            speed = min(speed, object_.rect.left - self.borders.left)
+            if Cell.WALL in {self.get_cell(object_.rect.left - speed,
+                                           object_.rect.top),
+                             self.get_cell(object_.rect.left - speed,
+                                           object_.rect.bottom)}:
+                speed = object_.rect.left % self.CELL_SIZE
         elif direction is Direction.RIGHT:
-            speed = min(speed, self.borders.right - object_.x)
-        elif directoin is Direction.UP:
-            speed = min(speed, object_.y - self.borders.top)
+            speed = min(speed, self.borders.right - object_.rect.right)
+            if Cell.WALL in {self.get_cell(object_.rect.right + speed,
+                                           object_.rect.top),
+                             self.get_cell(object_.rect.right + speed,
+                                           object_.rect.bottom)}:
+                speed = self.CELL_SIZE - object_.rect.right % self.CELL_SIZE
+        elif direction is Direction.UP:
+            speed = min(speed, object_.rect.top - self.borders.top)
+            if Cell.WALL in {self.get_cell(object_.rect.right,
+                                           object_.rect.top - speed),
+                             self.get_cell(object_.rect.left,
+                                           object_.rect.top - speed)}:
+                speed = object_.rect.top % self.CELL_SIZE
         elif direction is Direction.DOWN:
-            speed = min(speed, self.borders.bottom - object_.y)
+            speed = min(speed, self.borders.bottom - object_.rect.bottom)
+            if Cell.WALL in {self.get_cell(object_.rect.right,
+                                           object_.rect.bottom + speed),
+                             self.get_cell(object_.rect.left,
+                                           object_.rect.bottom + speed)}:
+                speed = self.CELL_SIZE - object_.rect.bottom % self.CELL_SIZE
+
+        if speed == 0:
+            if isinstance(object_, Weapon):
+                self.objects.remove(object_)
+            return
 
         if direction is Direction.LEFT:
             yx = (0, -speed)
@@ -135,7 +173,7 @@ class Game:
             yx = (0, speed)
         elif direction is Direction.UP:
             yx = (-speed, 0)
-        elif directoin is Direction.DOWN:
+        elif direction is Direction.DOWN:
             yx = (speed, 0)
 
         object_.x += yx[1]
@@ -143,30 +181,58 @@ class Game:
 
         self.triggers(object_)
 
+    def get_cell(self, y, x):
+        if x < 0:
+            x = 0
+        elif x >= self.borders.right:
+            x = self.borders.right - 1
+        if y < 0:
+            y = 0
+        elif y >= self.borders.bottom:
+            y = self.borders.bottom - 1
+        return self.map_[y // self.CELL_SIZE][x // self.CELL_SIZE]
 
     def triggers(self, object_: ObjectInGame):
         for other in self.objects:
             if other is object_:
                 continue
-            if self.hit(other, object_):
-                pass
+            if (isinstance(object_.gameobject, Weapon) and
+                    isinstance(other.gameobject, Player) and
+                    object_.gameobject.player is not other.gameobject and
+                    self.hit(object_, other)):
+                other.gameobject.damage(object_.gameobject)
+                self.objects.remove(object_)
+                # TODO: remove player if he died
+            elif (isinstance(other.gameobject, Weapon) and
+                  isinstance(object_.gameobject, Player) and
+                  other.gameobject.player is not object_.gameobject and
+                  self.hit(object_, other)):
+                object_.gameobject.damage(other.gameobject)
+                self.objects.remove(other)
+                # TODO: remove player if he died
 
     @staticmethod
-    def hit(first, second):
-        return False
+    def hit(first: ObjectInGame, second: ObjectInGame):
+        # If one rectangle is on left side of other
+        if (first.rect.left > second.rect.right) or (
+                second.rect.left > first.rect.right):
+            return False
+
+
+        # If one rectangle is above other
+        if (first.rect.bottom < second.rect.top) or (
+                second.rect.bottom < first.rect.top):
+            return False
+
+        return True
 
     def sight(self, object_in_game: ObjectInGame) -> Observation:
         return Observation(self.map_, self.objects, self.CELL_SIZE)
 
-    def update(self):
-        """Updates on game independent of specific objects"""
-
     @property
     def ended(self):
-        # FIXME:
-        return (self._ended
-                or (self.tick >= self.MAX_NUM_TICKS)
-                or len(self.players) == 1)
+        return ((self.tick >= self.MAX_NUM_TICKS)
+                or len(self.objects) == 1)
 
 
 class RemoteGame(Game):
