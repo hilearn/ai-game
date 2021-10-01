@@ -1,10 +1,6 @@
 import pygame
 import threading
-from .gameobject import GameObject, Action, Stats
-
-
-class Player(GameObject):
-    """Bot or Person playing"""
+from .gameobject import Player, Action, Stats
 
 
 class RemotePlayer(Player):
@@ -20,16 +16,13 @@ class KeyboardPlayer(Player):
         super().__init__(stats)
         self.key_pressed = None
         pygame.init()
-        listener = threading.Thread(target=self.listener)
+        listener = threading.Thread(target=self.listener, daemon=True)
         listener.start()
 
     def decide(self):
         keys = self.key_pressed
-        self.key_pressed = []
-        if keys is not None:
-            return keys
-        else:
-            return [Action.NOTHING]
+        self.key_pressed = [Action.NOTHING, Action.NOTHING]
+        return keys
 
     def listener(self):
         while True:
