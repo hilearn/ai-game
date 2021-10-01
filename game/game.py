@@ -42,10 +42,12 @@ class ObjectInGame:
 class Observation:
     map_: Map
     objects: list[ObjectInGame]
+    cell_size: int
 
 
 class Game:
-    CELL_SIZE = 10  # pixels
+    CELL_SIZE = 200  # pixels
+    FENCE_SIZE = 50
     TICK_PER_SEC = 24  # number of ticks per second
     MAX_NUM_TICKS = 2880  # number of ticks till the end of the game
 
@@ -154,7 +156,7 @@ class Game:
         return False
 
     def sight(self, object_in_game: ObjectInGame) -> Observation:
-        return Observation(self.map_, self.objects)
+        return Observation(self.map_, self.objects, self.CELL_SIZE)
 
     def update(self):
         """Updates on game independent of specific objects"""
