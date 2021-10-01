@@ -51,6 +51,7 @@ class ObjectInGame:
 class Observation:
     map_: Map
     objects: list[ObjectInGame]
+    cell_size: int
 
 
 class Game:
@@ -216,7 +217,7 @@ class Game:
         return True
 
     def sight(self, object_in_game: ObjectInGame) -> Observation:
-        return Observation(self.map_, self.objects)
+        return Observation(self.map_, self.objects, self.CELL_SIZE)
 
     @property
     def ended(self):
