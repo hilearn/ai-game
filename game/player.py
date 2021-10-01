@@ -1,9 +1,5 @@
-from .gameobject import GameObject, Action
+from .gameobject import Player, Action
 
-
-
-class Player(GameObject):
-    """Bot or Person playing"""
 
 
 class RemotePlayer(Player):
@@ -38,12 +34,3 @@ class Bot(Player):
 
     def parse(self, decision: list[float]) -> Action:
         pass
-
-
-class Weapon(GameObject):
-    def __init__(self, action):
-        self.action = action
-
-    def decide(self):
-        return self.action
-
