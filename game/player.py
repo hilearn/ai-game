@@ -20,7 +20,7 @@ class KeyboardPlayer(Player):
         super().__init__(stats)
         self.key_pressed = None
         pygame.init()
-        listener = threading.Thread(self.listener)
+        listener = threading.Thread(target=self.listener)
         listener.start()
 
     def decide(self):
