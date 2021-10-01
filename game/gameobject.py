@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 
 
@@ -10,7 +11,16 @@ class Action(Enum):
     SHOOT = 5
 
 
+@dataclass
+class Stats:
+    speed: int
+    health: int
+
+
 class GameObject:
+    def __init__(self, stats: Stats):
+        self.stats = stats
+
     def decide(self) -> Action:
         pass
 
@@ -23,7 +33,8 @@ class Player(GameObject):
 
 
 class Weapon(GameObject):
-    def __init__(self, action):
+    def __init__(self, stats: Stats, action):
+        super().__init__(stats)
         self.action = action
 
     def decide(self):

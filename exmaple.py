@@ -1,8 +1,9 @@
 from game import Game, Player, _3X5Map
+from game.gameobject import Stats
 
 
 def main():
-    players = [Player(), Player()]
+    players = [Player(stats=Stats(2, 3)), Player(stats=Stats(4, 2))]
     game = Game(_3X5Map, players)
 
     game.run()
