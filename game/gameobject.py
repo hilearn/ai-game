@@ -18,14 +18,18 @@ class Stats:
 
 
 class GameObject:
-    def __init__(self, stats: Stats):
+    def __init__(self, stats: Stats, weapon_stats: Stats):
         self.stats = stats
+        self.weapon_stats = weapon_stats
 
     def decide(self) -> Action:
         pass
 
     def observe(self, sight):
         pass
+
+    def create_weapon(self, action):
+        return Weapon(self.weapon_stats, action)
 
 
 class Player(GameObject):
