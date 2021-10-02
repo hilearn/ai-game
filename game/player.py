@@ -28,6 +28,7 @@ class KeyboardPlayer(Player):
     def decide(self):
         keys = self.key_pressed
         self.key_pressed = [Action.NOTHING, Action.NOTHING]
+        pygame.event.clear()
         return keys
 
     def listener(self):
@@ -54,6 +55,7 @@ class KeyboardPlayer(Player):
             len(input_map) * sight.cell_size + 2 * self.BORDER_SIZE
         )
 
+        self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Brutal story of little Ninja")
 
         self.fence_image_width = pygame.image.load(
@@ -90,8 +92,6 @@ class KeyboardPlayer(Player):
 
     def observe(self, sight):
         self.load(sight)
-
-        self.WIN = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
 
         background_color = (255, 255, 255)
         self.WIN.fill(background_color)
