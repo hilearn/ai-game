@@ -17,6 +17,11 @@ class Stats:
     health: int
 
 
+@dataclass
+class PlayerStats(Stats):
+    reload_time: float
+
+
 class GameObject:
     def __init__(self, stats: Stats):
         self.stats = stats

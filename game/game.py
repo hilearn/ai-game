@@ -48,6 +48,11 @@ class ObjectInGame:
 
 
 @dataclass
+class PlayerInGame(ObjectInGame):
+    last_shot: float = None  # timestamp
+
+
+@dataclass
 class Observation:
     map_: Map
     objects: list[ObjectInGame]
@@ -60,7 +65,7 @@ class Game:
     TICK_PER_SEC = 24  # number of ticks per second
     MAX_NUM_TICKS = 2880  # number of ticks till the end of the game
 
-    def __init__(self, map_: Map, players: list[GameObject]):
+    def __init__(self, map_: Map, players: list[Player]):
         self.map_ = map_
         self.borders = Rect(0, self.map_.size()[0] * self.CELL_SIZE - 1,
                             0, self.map_.size()[1] * self.CELL_SIZE - 1)
@@ -68,13 +73,13 @@ class Game:
                 ), "Can't have more players than spawn points"
         self.clear(players)
 
-    def clear(self, players):
+    def clear(self, players: list[Player]):
         spawn_points = self.map_.spawn_points[:]  # copy
         random.shuffle(spawn_points)
         half_cell = self.CELL_SIZE // 2
         quarter_cell = self.CELL_SIZE // 4
         self.objects = [
-            ObjectInGame(
+            PlayerInGame(
                 player,
                 spawn_point[0] * self.CELL_SIZE + quarter_cell,
                 spawn_point[1] * self.CELL_SIZE + quarter_cell,
@@ -91,15 +96,15 @@ class Game:
             self.tick_length = 1 / self.TICK_PER_SEC
 
     def run(self):
-        end = time.time()
+        self.end = time.time()
         for self.tick in range(self.MAX_NUM_TICKS):
-            delta = end - time.time()
+            delta = self.end - time.time()
             time.sleep(max(delta, 0))
             if delta < -2:
                 start = time.time()
             else:
-                start = end
-            end = start + self.tick_length
+                start = self.end
+            self.end = start + self.tick_length
 
             for object_ in self.objects:
                 object_.gameobject.observe(self.sight(object_))
@@ -126,16 +131,20 @@ class Game:
             elif action == Action.MOVE_DOWN:
                 self.move(object_, Direction.DOWN, speed)
             elif action == Action.SHOOT:
-                self.objects.append(
-                    ObjectInGame(
-                        object_.gameobject.create_weapon(
-                            object_.direction.to_action()),
-                        object_.y,
-                        object_.x,
-                        object_.direction,
-                        (eighth_cell, eighth_cell)
+                if (object_.last_shot is None
+                        or self.end - object_.last_shot
+                        >= object_.gameobject.stats.reload_time):
+                    self.objects.append(
+                        ObjectInGame(
+                            object_.gameobject.create_weapon(
+                                object_.direction.to_action()),
+                            object_.y + 3 * eighth_cell // 2,
+                            object_.x + 3 * eighth_cell // 2,
+                            object_.direction,
+                            (eighth_cell, eighth_cell)
+                        )
                     )
-                )
+                    object_.last_shot = self.end
 
     def move(self, object_: ObjectInGame, direction: Direction, speed: int):
         object_.direction = direction
