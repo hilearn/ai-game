@@ -91,6 +91,9 @@ class Game:
             self.tick_length = 1 / self.TICK_PER_SEC
 
     def run(self):
+        for player_obj in self.objects:
+            player_obj.gameobject.connect()
+
         end = time.time()
         for self.tick in range(self.MAX_NUM_TICKS):
             delta = end - time.time()
