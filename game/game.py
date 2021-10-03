@@ -2,7 +2,7 @@ import time
 import random
 from enum import Enum
 from dataclasses import dataclass
-from .gameobject import Action, GameObject, Player, Weapon, Stats
+from .gameobject import Action, GameObject, Player, Weapon
 from .map import Cell, Map
 
 
@@ -98,7 +98,7 @@ class Game:
             if delta < -2:
                 start = time.time()
             else:
-                start =end
+                start = end
             end = start + self.tick_length
 
             for object_ in self.objects:
@@ -212,7 +212,7 @@ class Game:
             weapon_obj = obj1
             player_obj = obj2
         elif (isinstance(obj2.gameobject, Weapon) and
-                isinstance(obj1.gameobject, Player)):
+              isinstance(obj1.gameobject, Player)):
             player = obj1.gameobject
             weapon = obj2.gameobject
             weapon_obj = obj2
@@ -234,7 +234,6 @@ class Game:
         if (first.rect.left > second.rect.right) or (
                 second.rect.left > first.rect.right):
             return False
-
 
         # If one rectangle is above other
         if (first.rect.bottom < second.rect.top) or (
