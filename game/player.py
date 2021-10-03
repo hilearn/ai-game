@@ -28,7 +28,21 @@ class KeyboardPlayer(Player):
     def decide(self):
         keys = self.key_pressed
         self.key_pressed = [Action.NOTHING, Action.NOTHING]
-        pygame.event.clear()
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    keys[1] = Action.SHOOT
+                if keys[0] != Action.NOTHING:
+                    break
+                if event.key == pygame.K_LEFT:
+                    keys[0] = Action.MOVE_LEFT
+                elif event.key == pygame.K_RIGHT:
+                    keys[0] = Action.MOVE_RIGHT
+                elif event.key == pygame.K_UP:
+                    keys[0] = Action.MOVE_UP
+                elif event.key == pygame.K_DOWN:
+                    keys[0] = Action.MOVE_DOWN
         return keys
 
     def listener(self):
@@ -42,9 +56,8 @@ class KeyboardPlayer(Player):
                 self.key_pressed[0] = Action.MOVE_DOWN
             elif keys[pygame.K_UP]:
                 self.key_pressed[0] = Action.MOVE_UP
-            elif keys[pygame.K_SPACE]:
+            if keys[pygame.K_SPACE]:
                 self.key_pressed[1] = Action.SHOOT
-            # pygame.event.pump()
 
     def load(self, sight):
         if self.loaded:

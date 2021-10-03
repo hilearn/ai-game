@@ -21,14 +21,11 @@ class GameObject:
     def __init__(self, stats: Stats):
         self.stats = stats
 
-    def decide(self) -> Action:
+    def decide(self) -> list[Action]:
         pass
 
     def observe(self, sight):
         pass
-
-    def create_weapon(self, action):
-        return Weapon(self.weapon_stats, action, self)
 
 
 player_images = ['Red.png', 'Blue.png']
@@ -43,6 +40,9 @@ class Player(GameObject):
         self.weapon_stats = weapon_stats
         self.image = next(self.images)
         self.health = self.stats.health
+
+    def create_weapon(self, action):
+        return Weapon(self.weapon_stats, action, self)
 
     def damage(self, weapon):
         self.reward = 1
