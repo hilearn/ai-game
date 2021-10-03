@@ -72,19 +72,14 @@ class KeyboardPlayer(Player):
         pygame.display.set_caption("Brutal story of little Ninja")
 
         self.fence_image_width = pygame.image.load(
-            self.photos_path / 'wooden-fence.png')
+            self.photos_path / 'top bottom.png')
         self.fence_w = pygame.transform.scale(
             self.fence_image_width,
             (self.WIDTH, self.BORDER_SIZE))
-        self.fence_image_height_l = pygame.image.load(
-            self.photos_path / 'left_border.png')
-        self.fence_h_l = pygame.transform.scale(
-            self.fence_image_height_l,
-            (self.BORDER_SIZE, self.HEIGHT - 2 * self.BORDER_SIZE))
-        self.fence_image_height_h = pygame.image.load(
-            self.photos_path / 'right_border.png')
-        self.fence_h_r = pygame.transform.scale(
-            self.fence_image_height_h,
+        self.fence_image_height = pygame.image.load(
+            self.photos_path / 'right left.png')
+        self.fence_h = pygame.transform.scale(
+            self.fence_image_height,
             (self.BORDER_SIZE, self.HEIGHT - 2 * self.BORDER_SIZE))
 
         self.barier_image = pygame.image.load(self.photos_path / 'Box.png')
@@ -120,9 +115,9 @@ class KeyboardPlayer(Player):
 
         self.WIN.blit(self.fence_w, (0, 0))
         self.WIN.blit(self.fence_w, (0, self.HEIGHT - self.BORDER_SIZE))
-        self.WIN.blit(self.fence_h_l, (0, self.BORDER_SIZE))
-        self.WIN.blit(self.fence_h_r, (self.WIDTH - self.BORDER_SIZE,
-                                       self.BORDER_SIZE))
+        self.WIN.blit(self.fence_h, (0, self.BORDER_SIZE))
+        self.WIN.blit(self.fence_h, (self.WIDTH - self.BORDER_SIZE,
+                                     self.BORDER_SIZE))
         for i, row in enumerate(sight.map_._map):
             for j, cell in enumerate(row):
                 if cell == Cell.WALL:

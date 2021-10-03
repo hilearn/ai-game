@@ -28,7 +28,7 @@ class GameObject:
         pass
 
 
-player_images = ['Red.png', 'Blue.png']
+player_images = ['Red.png', 'Blue.png', 'Green.png', 'Yellow.png']
 
 
 class Player(GameObject):
