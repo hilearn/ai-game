@@ -138,8 +138,8 @@ class Game:
                         ObjectInGame(
                             object_.gameobject.create_weapon(
                                 object_.direction.to_action()),
-                            object_.y,
-                            object_.x,
+                            object_.y + 3 * eighth_cell // 2,
+                            object_.x + 3 * eighth_cell // 2,
                             object_.direction,
                             (eighth_cell, eighth_cell)
                         )
