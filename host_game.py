@@ -1,5 +1,5 @@
 import socket
-from game import Game, RemotePlayer, _3X5Map, Stats
+from game import Game, RemotePlayer, _3X5Map, PlayerStats, Stats
 
 
 def main(host, port):
@@ -8,11 +8,11 @@ def main(host, port):
         s.listen()
 
         players = [RemotePlayer(s,
-                                stats=Stats(8, 3),
+                                stats=PlayerStats(8, 3, 1),
                                 weapon_stats=Stats(12, 1),
                                 image='Blue.png'),
                    RemotePlayer(s,
-                                stats=Stats(8, 3),
+                                stats=PlayerStats(8, 3, 1),
                                 weapon_stats=Stats(12, 1),
                                 image='Red.png')]
 

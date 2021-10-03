@@ -17,6 +17,11 @@ class Stats:
     health: int
 
 
+@dataclass
+class PlayerStats(Stats):
+    reload_time: float
+
+
 class GameObject:
     def __init__(self, stats: Stats):
         self.stats = stats
@@ -28,7 +33,7 @@ class GameObject:
         pass
 
 
-player_images = ['Red.png', 'Blue.png']
+player_images = ['Red.png', 'Blue.png', 'Green.png', 'Yellow.png']
 
 
 class Player(GameObject):
