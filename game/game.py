@@ -128,7 +128,8 @@ class Game:
             elif action == Action.SHOOT:
                 self.objects.append(
                     ObjectInGame(
-                        object_.gameobject.create_weapon(object_.direction.to_action()),
+                        object_.gameobject.create_weapon(
+                            object_.direction.to_action()),
                         object_.y,
                         object_.x,
                         object_.direction,
