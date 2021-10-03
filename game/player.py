@@ -76,7 +76,6 @@ class KeyboardPlayer(Player):
         self.barier = pygame.transform.scale(self.barier_image, self.barier_size)
 
         self.images = {}
-        self.locations = {}
         self.angles = {}
         self.loaded = True
     
