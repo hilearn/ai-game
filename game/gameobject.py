@@ -40,14 +40,17 @@ class Player(GameObject):
     """Bot or Person playing"""
     images = (image for i in range(1000) for image in player_images)
 
-    def __init__(self, weapon_stats: Stats, *args, **kwargs):
+    def __init__(self, weapon_stats: Stats, *args, image=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.weapon_stats = weapon_stats
-        self.image = next(self.images)
+        self.image = image or next(self.images)
         self.health = self.stats.health
 
     def create_weapon(self, action):
         return Weapon(self.weapon_stats, action, self)
+
+    def connect(self):
+        pass
 
     def damage(self, weapon):
         self.reward = 1

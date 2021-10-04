@@ -1,16 +1,37 @@
 import pygame
 import threading
+import pickle
 from pathlib import Path
 from .gameobject import Player, Action, Weapon
-from .game import Observation, Cell
+from .base_game import Observation, Cell
 
 
 class RemotePlayer(Player):
+    def __init__(self, s, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.s = s
+        self.args_kwargs = (args, kwargs)
+
     def decide(self):
-        self.socket.get_decision()
+        # WARNING: don't use pickle in production codes
+        return pickle.loads(self.conn.recv(256))
 
     def observe(self, sight):
-        self.socket.send_sight(sight)
+        self.conn.sendall(pickle.dumps(sight))
+
+    def connect(self):
+        self.conn, self.addr = self.s.accept()
+        self.conn.sendall(pickle.dumps(self.args_kwargs))
+
+    def __getstate__(self):
+        d = self.__dict__.copy()
+        d.pop('s')
+        d.pop('conn')
+        d.pop('addr')
+        return d
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
 
 class KeyboardPlayer(Player):
