@@ -8,6 +8,7 @@ def main(host, port):
         s.connect((host, port))
         args, kwargs = pickle.loads(s.recv(4096))
         player = KeyboardPlayer(*args, **kwargs)
+        s.sendall(b'ack')
         RemoteGame(s, player).run()
 
 

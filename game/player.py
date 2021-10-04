@@ -21,7 +21,9 @@ class RemotePlayer(Player):
 
     def connect(self):
         self.conn, self.addr = self.s.accept()
+        self.conn.__enter__()
         self.conn.sendall(pickle.dumps(self.args_kwargs))
+        self.conn.recv(128)
 
     def __getstate__(self):
         d = self.__dict__.copy()
