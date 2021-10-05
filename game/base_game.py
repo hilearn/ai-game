@@ -60,15 +60,15 @@ class Observation:
 
 
 class Game:
-    CELL_SIZE = 200  # pixels
     FENCE_SIZE = 50
     TICK_PER_SEC = 24  # number of ticks per second
     MAX_NUM_TICKS = 2880  # number of ticks till the end of the game
 
     def __init__(self, map_: Map, players: list[Player]):
         self.map_ = map_
-        self.borders = Rect(0, self.map_.size()[0] * self.CELL_SIZE - 1,
-                            0, self.map_.size()[1] * self.CELL_SIZE - 1)
+        self.cell_size = self.map_.cell_size
+        self.borders = Rect(0, self.map_.size()[0] * self.cell_size - 1,
+                            0, self.map_.size()[1] * self.cell_size - 1)
         assert (len(self.map_.spawn_points) >= len(players)
                 ), "Can't have more players than spawn points"
         self.clear(players)
@@ -76,13 +76,13 @@ class Game:
     def clear(self, players: list[Player]):
         spawn_points = self.map_.spawn_points[:]  # copy
         random.shuffle(spawn_points)
-        half_cell = self.CELL_SIZE // 2
-        quarter_cell = self.CELL_SIZE // 4
+        half_cell = self.cell_size // 2
+        quarter_cell = self.cell_size // 4
         self.objects = [
             PlayerInGame(
                 player,
-                spawn_point[0] * self.CELL_SIZE + quarter_cell,
-                spawn_point[1] * self.CELL_SIZE + quarter_cell,
+                spawn_point[0] * self.cell_size + quarter_cell,
+                spawn_point[1] * self.cell_size + quarter_cell,
                 Direction.UP,
                 (half_cell, half_cell)
             )
@@ -120,7 +120,7 @@ class Game:
     def act(self, object_: ObjectInGame, actions: list[Action]):
         if actions is None:
             return
-        eighth_cell = self.CELL_SIZE // 8
+        eighth_cell = self.cell_size // 8
         for action in actions:
             speed = object_.gameobject.stats.speed
             if action == Action.NOTHING:
@@ -158,7 +158,7 @@ class Game:
                                            object_.rect.top),
                              self.get_cell(object_.rect.left - speed,
                                            object_.rect.bottom)}:
-                speed2 = object_.rect.left % self.CELL_SIZE
+                speed2 = object_.rect.left % self.cell_size
                 speed = min(speed, speed2)
         elif direction is Direction.RIGHT:
             speed = min(speed, self.borders.right - object_.rect.right)
@@ -166,8 +166,8 @@ class Game:
                                            object_.rect.top),
                              self.get_cell(object_.rect.right + speed,
                                            object_.rect.bottom)}:
-                speed2 = self.CELL_SIZE - object_.rect.right % self.CELL_SIZE
-                if speed2 == self.CELL_SIZE:
+                speed2 = self.cell_size - object_.rect.right % self.cell_size
+                if speed2 == self.cell_size:
                     speed2 = 0
                 speed = min(speed, speed2)
         elif direction is Direction.UP:
@@ -176,7 +176,7 @@ class Game:
                                            object_.rect.top - speed),
                              self.get_cell(object_.rect.left,
                                            object_.rect.top - speed)}:
-                speed2 = object_.rect.top % self.CELL_SIZE
+                speed2 = object_.rect.top % self.cell_size
                 speed = min(speed, speed2)
         elif direction is Direction.DOWN:
             speed = min(speed, self.borders.bottom - object_.rect.bottom)
@@ -184,8 +184,8 @@ class Game:
                                            object_.rect.bottom + speed),
                              self.get_cell(object_.rect.left,
                                            object_.rect.bottom + speed)}:
-                speed2 = self.CELL_SIZE - object_.rect.bottom % self.CELL_SIZE
-                if speed2 == self.CELL_SIZE:
+                speed2 = self.cell_size - object_.rect.bottom % self.cell_size
+                if speed2 == self.cell_size:
                     speed2 = 0
                 speed = min(speed, speed2)
 
@@ -209,7 +209,7 @@ class Game:
         self.triggers(object_)
 
     def get_cell(self, x, y):
-        return self.map_[y // self.CELL_SIZE][x // self.CELL_SIZE]
+        return self.map_[y // self.cell_size][x // self.cell_size]
 
     def triggers(self, object_: ObjectInGame):
         for other in self.objects:
@@ -256,7 +256,7 @@ class Game:
         return True
 
     def sight(self, object_in_game: ObjectInGame) -> Observation:
-        return Observation(self.map_, self.objects, self.CELL_SIZE)
+        return Observation(self.map_, self.objects, self.cell_size)
 
     @property
     def ended(self):
