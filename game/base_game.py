@@ -61,12 +61,12 @@ class Observation:
 
 class Game:
     FENCE_SIZE = 50
-    TICK_PER_SEC = 24  # number of ticks per second
     MAX_NUM_TICKS = 2880  # number of ticks till the end of the game
 
-    def __init__(self, map_: Map, players: list[Player]):
+    def __init__(self, map_: Map, players: list[Player], *, ticks_per_sec=24):
         self.map_ = map_
         self.cell_size = self.map_.cell_size
+        self.ticks_per_sec = ticks_per_sec
         self.borders = Rect(0, self.map_.size()[0] * self.cell_size - 1,
                             0, self.map_.size()[1] * self.cell_size - 1)
         assert (len(self.map_.spawn_points) >= len(players)
@@ -90,10 +90,10 @@ class Game:
         ]
 
         self.tick = 0
-        if self.TICK_PER_SEC == 0:
+        if self.ticks_per_sec == 0:
             self.tick_length = 0
         else:
-            self.tick_length = 1 / self.TICK_PER_SEC
+            self.tick_length = 1 / self.ticks_per_sec
 
     def run(self):
         for player_obj in self.objects:
@@ -215,7 +215,7 @@ class Game:
         for other in self.objects:
             if other is object_:
                 continue
-            self.collide(other, object_)
+            self.collide(object_, other)
 
     def collide(self, obj1: ObjectInGame, obj2: ObjectInGame):
         if (isinstance(obj1.gameobject, Weapon) and
@@ -234,7 +234,9 @@ class Game:
             return
         if weapon.player is not player and self.hit(obj1, obj2):
             player.damage(weapon)
-            self.objects.remove(weapon_obj)
+            if weapon_obj in self.objects:
+                # in case weapon hits two people
+                self.objects.remove(weapon_obj)
             if player.health <= 0:
                 self.objects.remove(player_obj)
                 weapon.player.kill()
