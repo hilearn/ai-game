@@ -1,16 +1,21 @@
 import numpy as np
-from game import Cell, Bot, Observation
+from game import Cell, Bot
 
 
 class Strategy:
-    def __init__(self, model):
-        self.model = model
-
-    def decide(self, state: Observation) -> list[float]:
+    def decide(self, bot: Bot) -> list[float]:
         pass
 
 
+class RandomStrategy:
+    def decide(self, bot: Bot) -> list[float]:
+        return np.random.random(6)
+
+
 class NNStrategy(Strategy):
+    def __init__(self, model):
+        self.model = model
+
     def decide(self, bot: Bot) -> list[float]:
         return self.model.feed(self._input_from_state(bot))
 
